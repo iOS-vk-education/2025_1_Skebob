@@ -105,7 +105,7 @@ struct LoginView: View {
         .ignoresSafeArea(edges: .top)
         .ignoresSafeArea(.keyboard)
         .fullScreenCover(isPresented: $isLoggedIn) {
-            ContentView()
+            LoginView()
         }
     }
 }

@@ -11,7 +11,6 @@ enum SKBAppTabKind: Identifiable, Hashable, CaseIterable {
     case quotes
     case rating
     case portfolio
-    case profile
     case settings
 }
 
@@ -31,8 +30,6 @@ extension SKBAppTabKind {
             "Рейтинг"
         case .portfolio:
             "Портфель"
-        case .profile:
-            "Профиль"
         case .settings:
             "Настройки"
         }
@@ -41,15 +38,13 @@ extension SKBAppTabKind {
     var iconName: String {
         switch self {
         case .quotes:
-            "chart.line.uptrend.xyaxis"
+            "HomeIcon"
         case .rating:
-            "star.fill"
+            "RatingIcon"
         case .portfolio:
-            "briefcase.fill"
-        case .profile:
-            "person.fill"
+            "WalletIcon"
         case .settings:
-            "gearshape.fill"
+            "SettingsIcon"
         }
     }
 }

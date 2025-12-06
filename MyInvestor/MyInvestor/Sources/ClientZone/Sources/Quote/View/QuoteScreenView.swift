@@ -9,9 +9,13 @@ struct QuoteScreenView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            someSectionTitle
-            buttonContainer
+            balanceContainer
+            favoritesContainer
+            promotionContainer
+            Spacer()
         }
+        .padding(.top, 100)
+        //.background(Color.black)
     }
 }
 
@@ -19,31 +23,75 @@ struct QuoteScreenView: View {
 
 private extension QuoteScreenView {
 
-    var someSectionTitle: some View {
+    var balanceContainer: some View {
         VStack(spacing: 16) {
-            Text("Просто текст 1")
-            Text("Просто текст 2")
+            HStack{
+                Text("Текущий баланс")
+                Spacer()
+            }
+            .font(.system(size: 16, weight: .bold))
+            .foregroundColor(Color(hex: "FFFFFF").opacity(0.6))
+            HStack{
+                Text("$1,000.000")
+                Spacer()
+            }
+            .font(.system(size: 40, weight: .bold))
+            .foregroundColor(Color(hex: "FFFFFF"))
         }
+        .padding(.leading, 16)
     }
 
-    var buttonContainer: some View {
-        HStack(spacing: 16) {
-            Button {
-                // TODO: Добавить обработку нажатия
-            } label: {
-                Text("Кнопка 1")
-                    .foregroundStyle(SKBColor.mainAppColor.suiColor)
+    var favoritesContainer: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Избранное")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white)
+                Spacer()
             }
-            .buttonStyle(.bordered)
-
-            Button {
-                // TODO: Добавить обработку нажатия
-            } label: {
-                Text("Кнопка 2")
+            ZStack(alignment: .top){
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 8) {
+                        ForEach(favoriteItems) { item in
+                            FavoritesCardView(item: item)
+                                .frame(width: 200, height: 180)
+                        }
+                    }
+                }
+                .frame(height: 196)
+                .clipped()
             }
-            .buttonStyle(.bordered)
         }
+        .padding(.horizontal, 16)
     }
+    var promotionContainer: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Акции")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white)
+                Spacer()
+            }
+            HStack{
+                LazyVStack(spacing: 12){
+                    ForEach(favoriteItems) { item in
+                        PromotionCardView(item: item)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
+        private var favoriteItems: [PromotionItem] {
+            [
+                PromotionItem(symbol: "BTC", name: "Bitcoin", price: 15240, changePercent: 0.25, icon: "BTCIcon"),
+                PromotionItem(symbol: "ETH", name: "Ethereum", price: 1150, changePercent: 0.89, icon: "BTCIcon"),
+                PromotionItem(symbol: "DOT", name: "Polkadot", price: 5.288, changePercent: 0.89, icon: "BTCIcon"),
+                PromotionItem(symbol: "USDT", name: "Tether", price: 0.999, changePercent: 0.09, icon: "BTCIcon"),
+                PromotionItem(symbol: "DOGE", name: "Dogecoin", price: 0.100, changePercent: -1.2, icon: "BTCIcon")
+            ]
+        }
 }
 
 // MARK: - Preview

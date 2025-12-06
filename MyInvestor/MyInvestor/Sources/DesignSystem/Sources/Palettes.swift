@@ -8,5 +8,5 @@ import Foundation
 extension SKBColor {
 
     /// Основной цвет приложения
-    static let mainAppColor = SKBColor("FF1CDD")
+    static let mainAppColor = SKBColor("F59E0B")
 }
