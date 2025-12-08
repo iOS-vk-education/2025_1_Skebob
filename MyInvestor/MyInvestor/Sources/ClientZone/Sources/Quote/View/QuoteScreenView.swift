@@ -6,15 +6,15 @@
 import SwiftUI
 
 struct QuoteScreenView: View {
+    
+    @State private var userBalance = UserBalance(balance: 1000.0)
 
     var body: some View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
             promotionContainer
-            Spacer()
         }
-        .padding(.top, 100)
         //.background(Color.black)
     }
 }
@@ -23,53 +23,51 @@ struct QuoteScreenView: View {
 
 private extension QuoteScreenView {
 
-    var balanceContainer: some View {
+    private var balanceContainer: some View {
         VStack(spacing: 16) {
-            HStack{
+            HStack(spacing: 0) {
                 Text("Текущий баланс")
                 Spacer()
             }
             .font(.system(size: 16, weight: .bold))
-            .foregroundColor(Color(hex: "FFFFFF").opacity(0.6))
-            HStack{
-                Text("$1,000.000")
+            .foregroundColor(Color.white.opacity(0.6))
+
+            HStack(spacing: 0) {
+                Text(userBalance.formattedBalance)
                 Spacer()
             }
             .font(.system(size: 40, weight: .bold))
-            .foregroundColor(Color(hex: "FFFFFF"))
+            .foregroundColor(Color.white)
         }
         .padding(.leading, 16)
     }
 
     var favoritesContainer: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 0) {
                 Text("Избранное")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 Spacer()
             }
-            ZStack(alignment: .top){
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
-                        ForEach(favoriteItems) { item in
-                            FavoritesCardView(item: item)
-                                .frame(width: 200, height: 180)
-                        }
+            .padding(.leading, 16)
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 8) {
+                    ForEach(favoriteItems) { item in
+                        FavoritesCardView(item: item)
                     }
                 }
-                .frame(height: 196)
-                .clipped()
             }
+            .frame(height: 150)
         }
-        .padding(.horizontal, 16)
     }
     var promotionContainer: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 0) {
                 Text("Акции")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
+                    .padding(.bottom, 10)
                 Spacer()
             }
             HStack{
@@ -82,7 +80,7 @@ private extension QuoteScreenView {
         }
         .padding(.horizontal, 16)
     }
-
+        // Временные данные (потом будут из API и в другом месте)
         private var favoriteItems: [PromotionItem] {
             [
                 PromotionItem(symbol: "BTC", name: "Bitcoin", price: 15240, changePercent: 0.25, icon: "BTCIcon"),
@@ -97,5 +95,5 @@ private extension QuoteScreenView {
 // MARK: - Preview
 
 #Preview {
-    QuoteScreenView()
+    ClientZoneScreenView()
 }

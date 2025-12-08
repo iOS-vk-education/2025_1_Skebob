@@ -5,29 +5,7 @@
 //  Created by Максим Скориков on 01.12.2025.
 //
 
-import Foundation
 import SwiftUI
-
-struct PromotionItem: Identifiable {
-    let id = UUID()
-    let symbol: String
-    let name: String
-    let price: Double
-    let changePercent: Double
-    let icon: String
-
-    var formattedPrice: String {
-        return "$\(String(format: "%.2f", price))"
-    }
-
-    var formattedChange: String {
-        return "\(changePercent > 0 ? "+" : "-")\(String(format: "%.2f", abs(changePercent)))%"
-    }
-
-    var changeColor: Color {
-        return changePercent >= 0 ? .green : .red
-    }
-}
 
 struct FavoritesCardView: View {
     let item: PromotionItem
@@ -83,8 +61,6 @@ struct FavoritesCardView: View {
                 )
             )
         )
-        .frame(width: 200, height: 180)
-        .clipped()
     }
 }
 

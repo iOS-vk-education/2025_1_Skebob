@@ -7,6 +7,7 @@ import Foundation
 
 extension SKBColor {
 
-    /// Основной цвет приложения
     static let mainAppColor = SKBColor("F59E0B")
+    static let ambientAppColor_1 = SKBColor("EABB13")
+    static let ambientAppColor_2 = SKBColor("EE2B00")
 }

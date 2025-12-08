@@ -6,19 +6,19 @@
 import SwiftUI
 
 struct ClientZoneScreenView: View {
+    
     @State private var selectedTab: SKBAppTabKind = .quotes
 
     var body: some View {
-        ZStack{
-            ZStack(alignment: .bottom) {
-                content(for: selectedTab)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(hex: "161514").ignoresSafeArea())
-                CustomTabBar(selectedTab: $selectedTab)
-                    .padding(.horizontal, 18)
-            }
-            ZStack{
-                HStack {
+        
+        ScrollView{
+            content(for: selectedTab)
+        }
+        .scrollIndicators(.hidden)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "161514").ignoresSafeArea())
+        .safeAreaInset(edge: .top){
+            HStack(spacing: 0){
                     Button(action: { print("Экран profile") }) {
                         Image("ProfileIcon")
                             .topBarButtonStyle()
@@ -33,44 +33,38 @@ struct ClientZoneScreenView: View {
                     .padding(.trailing, 16)
                     .padding(.top, 10)
                 }
+            .overlay(
+                Circle()
+                    .fill(SKBColor.ambientAppColor_1.suiColor.opacity(0.1))
+                .frame(width: 278, height: 278)
+                .blur(radius: 200)
+                .offset(y: -120)
                 .overlay(
                     Circle()
-                    .fill(Color(hex: "EABB13").opacity(0.1))
-                    .frame(width: 278, height: 278)
-                    .blur(radius: 200)
-                    .offset(y: -120)
-                    .overlay(
-                        Circle()
-                        .fill(Color(hex: "EE2B00").opacity(0.2))
-                        .frame(width: 167, height: 167)
-                        .blur(radius: 100)
-                        .offset(y: -100)
-                    )
+                    .fill(SKBColor.ambientAppColor_2.suiColor.opacity(0.2))
+                    .frame(width: 167, height: 167)
+                    .blur(radius: 100)
+                    .offset(y: -100)
                 )
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            )
+        }
+        .safeAreaInset(edge: .bottom){
+            CustomTabBar(selectedTab: $selectedTab)
         }
     }
 
     @ViewBuilder
     private func content(for tab: SKBAppTabKind) -> some View {
+        
         switch tab {
         case .quotes:
-            ScrollView{
-                QuoteScreenAssembly.assemble()
-            }
+            QuoteScreenAssembly.assemble()
         case .rating:
-            ScrollView{
-                Text("Экран rating")
-            }
+            Text("Экран rating")
         case .portfolio:
-            ScrollView{
-                Text("Экран portfolio")
-            }
+            Text("Экран portfolio")
         case .settings:
-            ScrollView{
-                Text("Экран settings")
-            }
+            Text("Экран settings")
         }
     }
 }
