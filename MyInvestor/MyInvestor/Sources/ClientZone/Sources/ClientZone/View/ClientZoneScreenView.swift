@@ -17,22 +17,26 @@ struct ClientZoneScreenView: View {
         .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "161514").ignoresSafeArea())
-        .safeAreaInset(edge: .top){
-            HStack(spacing: 0){
-                    Button(action: { print("Экран profile") }) {
-                        Image("ProfileIcon")
-                            .topBarButtonStyle()
-                    }
-                    .padding(.leading, 16)
-                    .padding(.top, 10)
-                    Spacer()
-                    Button(action: { print("Поиск") }) {
-                        Image("SearchIcon")
-                            .topBarButtonStyle()
-                    }
-                    .padding(.trailing, 16)
-                    .padding(.top, 10)
+        .safeAreaInset(edge: .top) {
+            HStack(spacing: 0) {
+                Button {
+                    // TODO: Обработать нажание
+                } label: {
+                    Image("ProfileIcon")
+                        .topBarButtonStyle()
                 }
+                .padding(.leading, 16)
+                .padding(.top, 10)
+                Spacer()
+                Button {
+                    // TODO: Обработать нажание
+                } label: {
+                    Image("SearchIcon")
+                        .topBarButtonStyle()
+                }
+                .padding(.trailing, 16)
+                .padding(.top, 10)
+            }
             .overlay(
                 Circle()
                     .fill(SKBColor.ambientAppColor_1.suiColor.opacity(0.1))
@@ -48,7 +52,7 @@ struct ClientZoneScreenView: View {
                 )
             )
         }
-        .safeAreaInset(edge: .bottom){
+        .safeAreaInset(edge: .bottom) {
             CustomTabBar(selectedTab: $selectedTab)
         }
     }

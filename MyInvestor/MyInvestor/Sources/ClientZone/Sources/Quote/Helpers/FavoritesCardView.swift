@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FavoritesCardView: View {
+    
     let item: PromotionItem
 
     var body: some View {
@@ -33,7 +34,7 @@ struct FavoritesCardView: View {
             Text(item.formattedPrice)
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.white)
-            HStack(spacing: 12){
+            HStack(spacing: 12) {
                 Text(item.formattedChange)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(item.changeColor)

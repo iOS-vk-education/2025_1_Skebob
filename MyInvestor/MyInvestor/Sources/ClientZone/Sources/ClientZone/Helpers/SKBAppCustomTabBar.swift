@@ -17,7 +17,9 @@ struct CustomTabBar: View {
                     selectedTab = tab
                 } label: {
                     VStack(spacing: 0) {
-                        Image(tab.iconName).renderingMode(.template).foregroundColor(Color.white).opacity(selectedTab == tab ? 1 : 0.5)
+                        Image(tab.iconName).renderingMode(.template)
+                            .foregroundColor(Color.white)
+                            .opacity(selectedTab == tab ? 1 : 0.5)
                             .frame(width: 24, height: 24)
                             .padding(.top, 15)
                         if selectedTab == tab {
@@ -30,7 +32,7 @@ struct CustomTabBar: View {
                             Rectangle()
                                 .fill(Color.clear)
                                 .frame(width: 24, height: 3)
-                                .padding(.top, 15)
+                                .padding(.top, 10)
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 60)

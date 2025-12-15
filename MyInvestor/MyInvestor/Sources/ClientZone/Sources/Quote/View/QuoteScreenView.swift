@@ -25,31 +25,25 @@ private extension QuoteScreenView {
 
     private var balanceContainer: some View {
         VStack(spacing: 16) {
-            HStack(spacing: 0) {
-                Text("Текущий баланс")
-                Spacer()
-            }
-            .font(.system(size: 16, weight: .bold))
-            .foregroundColor(Color.white.opacity(0.6))
-
-            HStack(spacing: 0) {
-                Text(userBalance.formattedBalance)
-                Spacer()
-            }
-            .font(.system(size: 40, weight: .bold))
-            .foregroundColor(Color.white)
+            Text("Текущий баланс")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(Color.white.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+            Text(userBalance.formattedBalance)
+                .font(.system(size: 40, weight: .bold))
+                .foregroundColor(Color.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.leading, 16)
     }
 
     var favoritesContainer: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Text("Избранное")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                Spacer()
-            }
+            Text("Избранное")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 16)
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 8) {
@@ -63,18 +57,14 @@ private extension QuoteScreenView {
     }
     var promotionContainer: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Text("Акции")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.bottom, 10)
-                Spacer()
-            }
-            HStack{
-                LazyVStack(spacing: 12){
-                    ForEach(favoriteItems) { item in
-                        PromotionCardView(item: item)
-                    }
+            Text("Акции")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.bottom, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            LazyVStack(spacing: 12){
+                ForEach(favoriteItems) { item in
+                    PromotionCardView(item: item)
                 }
             }
         }
