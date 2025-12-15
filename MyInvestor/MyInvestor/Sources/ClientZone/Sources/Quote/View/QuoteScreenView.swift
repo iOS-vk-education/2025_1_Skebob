@@ -15,7 +15,6 @@ struct QuoteScreenView: View {
             favoritesContainer
             promotionContainer
         }
-        //.background(Color.black)
     }
 }
 
