@@ -21,7 +21,7 @@ struct PromotionItem: Identifiable, Equatable {
 extension PromotionItem {
     
     var formattedPrice: String {
-        "$\(String(format: "%.2f", price))"
+        "₽\(String(format: "%.2f", price))"
     }
 
     var formattedChange: String {
