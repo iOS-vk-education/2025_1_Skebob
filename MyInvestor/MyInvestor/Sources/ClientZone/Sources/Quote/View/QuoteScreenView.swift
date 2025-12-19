@@ -8,12 +8,18 @@ import SwiftUI
 struct QuoteScreenView: View {
     
     @State private var userBalance = UserBalance(balance: 1000.0)
+    @State private var favoriteItems: [PromotionItem] = []
 
     var body: some View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
             promotionContainer
+        }
+        .onAppear {
+            if favoriteItems.isEmpty {
+                loadSecurity()
+            }
         }
     }
 }
@@ -38,6 +44,7 @@ private extension QuoteScreenView {
     }
 
     var favoritesContainer: some View {
+        
         VStack(spacing: 0) {
             Text("Избранное")
                 .font(.system(size: 18, weight: .bold))
@@ -67,18 +74,31 @@ private extension QuoteScreenView {
                 }
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 10)
     }
-        // Временные данные (потом будут из API и в другом месте)
-        private var favoriteItems: [PromotionItem] {
-            [
-                PromotionItem(symbol: "BTC", name: "Bitcoin", price: 15240, changePercent: 0.25, icon: "BTCIcon"),
-                PromotionItem(symbol: "ETH", name: "Ethereum", price: 1150, changePercent: 0.89, icon: "BTCIcon"),
-                PromotionItem(symbol: "DOT", name: "Polkadot", price: 5.288, changePercent: 0.89, icon: "BTCIcon"),
-                PromotionItem(symbol: "USDT", name: "Tether", price: 0.999, changePercent: 0.09, icon: "BTCIcon"),
-                PromotionItem(symbol: "DOGE", name: "Dogecoin", price: 0.100, changePercent: -1.2, icon: "BTCIcon")
-            ]
+    
+    private func loadSecurity() {
+        print("Загрузка акций...")
+        Security.fetchSecurity { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let security):
+                    self.favoriteItems = security.map { sec in
+                        PromotionItem(
+                            symbol: sec.secid,
+                            name: sec.name,
+                            price: sec.price,
+                            changePercent: sec.changePercent,
+                            icon: "BTCIcon"
+                        )
+                    }
+                case .failure(let error):
+                    print("Не удалось загрузить акции: \(error)")
+                    self.favoriteItems = []
+                }
+            }
         }
+    }
 }
 
 // MARK: - Preview
