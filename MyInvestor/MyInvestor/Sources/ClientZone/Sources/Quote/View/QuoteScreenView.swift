@@ -8,12 +8,19 @@ import SwiftUI
 struct QuoteScreenView: View {
     
     @State private var userBalance = UserBalance(balance: 1000.0)
+    @State private var favoriteItems: [PromotionItem] = []
+    @State private var selectedPromotionItem: PromotionItem?
 
     var body: some View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
             promotionContainer
+        }
+        .onAppear {
+            if favoriteItems.isEmpty {
+                loadSecurity()
+            }
         }
     }
 }
@@ -23,7 +30,7 @@ struct QuoteScreenView: View {
 private extension QuoteScreenView {
 
     private var balanceContainer: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 4) {
             Text("Текущий баланс")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(Color.white.opacity(0.6))
@@ -35,10 +42,12 @@ private extension QuoteScreenView {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.leading, 16)
+        .padding(.top, 16)
     }
 
     var favoritesContainer: some View {
-        VStack(spacing: 0) {
+        
+        VStack(spacing: 5) {
             Text("Избранное")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
@@ -47,7 +56,9 @@ private extension QuoteScreenView {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 8) {
                     ForEach(favoriteItems) { item in
-                        FavoritesCardView(item: item)
+                        FavoritesCardView(item: item) {
+                            selectedPromotionItem = item
+                        }
                     }
                 }
             }
@@ -63,22 +74,42 @@ private extension QuoteScreenView {
                 .frame(maxWidth: .infinity, alignment: .leading)
             LazyVStack(spacing: 12){
                 ForEach(favoriteItems) { item in
-                    PromotionCardView(item: item)
+                    Button {
+                        selectedPromotionItem = item
+                    } label: {
+                        PromotionCardView(item: item)
+                    }
                 }
             }
         }
-        .padding(.horizontal, 16)
-    }
-        // Временные данные (потом будут из API и в другом месте)
-        private var favoriteItems: [PromotionItem] {
-            [
-                PromotionItem(symbol: "BTC", name: "Bitcoin", price: 15240, changePercent: 0.25, icon: "BTCIcon"),
-                PromotionItem(symbol: "ETH", name: "Ethereum", price: 1150, changePercent: 0.89, icon: "BTCIcon"),
-                PromotionItem(symbol: "DOT", name: "Polkadot", price: 5.288, changePercent: 0.89, icon: "BTCIcon"),
-                PromotionItem(symbol: "USDT", name: "Tether", price: 0.999, changePercent: 0.09, icon: "BTCIcon"),
-                PromotionItem(symbol: "DOGE", name: "Dogecoin", price: 0.100, changePercent: -1.2, icon: "BTCIcon")
-            ]
+        .padding(.horizontal, 10)
+        .fullScreenCover(item: $selectedPromotionItem) { item in
+            PromotionScreenView(item: item)
         }
+    }
+    
+    private func loadSecurity() {
+        print("Загрузка акций...")
+        Security.fetchSecurity { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let security):
+                    self.favoriteItems = security.map { sec in
+                        PromotionItem(
+                            symbol: sec.secid,
+                            name: sec.name,
+                            price: sec.price,
+                            changePercent: sec.changePercent,
+                            icon: "BTCIcon"
+                        )
+                    }
+                case .failure(let error):
+                    print("Не удалось загрузить акции: \(error)")
+                    self.favoriteItems = []
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Preview

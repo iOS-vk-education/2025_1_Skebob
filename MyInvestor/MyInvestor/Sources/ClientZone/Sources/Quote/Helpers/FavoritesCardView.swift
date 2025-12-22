@@ -10,9 +10,10 @@ import SwiftUI
 struct FavoritesCardView: View {
     
     let item: PromotionItem
+    let onDetailTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Image(item.icon)
                     .resizable()
@@ -39,7 +40,7 @@ struct FavoritesCardView: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(item.changeColor)
                 Button("Подробнее"){
-                    print("Открытие графика")
+                    onDetailTap()
                 }
                 .foregroundColor(Color(hex: "000000"))
                 .background(
@@ -66,43 +67,42 @@ struct FavoritesCardView: View {
 }
 
 struct PromotionCardView: View {
+    
     let item: PromotionItem
 
     var body: some View {
-        HStack(spacing: 8) {
-            HStack(spacing: 8) {
-                Image(item.icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 36, height: 36)
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.symbol)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.white)
-
-                    Text(item.name)
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.7))
-                }
-            }
-            Image("MiniGraphExample")
+        HStack(spacing: 12) {
+            Image(item.icon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 160, height: 40)
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(item.formattedPrice)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-
-                Text(item.formattedChange)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(item.changeColor)
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+            Text(item.symbol)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 50, alignment: .leading)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Text(item.name)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.7))
+                .frame(maxWidth: 200, alignment: .leading)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Text(item.formattedPrice)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 70, alignment: .trailing)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Text(item.formattedChange)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(item.changeColor)
+                .frame(width: 70, alignment: .trailing)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
-        .frame(height: 60)
+        .frame(maxWidth: .infinity, minHeight: 60)
         .padding(.horizontal, 8)
     }
 }

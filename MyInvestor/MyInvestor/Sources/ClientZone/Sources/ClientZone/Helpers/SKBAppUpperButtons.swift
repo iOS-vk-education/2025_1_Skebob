@@ -8,10 +8,11 @@
 import SwiftUI
 
 extension Image {
-    func topBarButtonStyle() -> some View {
+    
+    func topBarButtonStyle(color: Color = .white) -> some View {
         self
             .renderingMode(.template)
-            .foregroundColor(.white)
+            .foregroundColor(color)
             .frame(width: 28, height: 28)
             .padding(20)
             .background(

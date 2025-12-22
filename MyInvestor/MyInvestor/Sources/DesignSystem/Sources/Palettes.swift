@@ -10,4 +10,7 @@ extension SKBColor {
     static let mainAppColor = SKBColor("F59E0B")
     static let ambientAppColor_1 = SKBColor("EABB13")
     static let ambientAppColor_2 = SKBColor("EE2B00")
+    static let coolYellowColor = SKBColor("FFD033")
+    static let coolGreenColor = SKBColor("02C173")
+    static let coolRedColor = SKBColor("E11A38")
 }
