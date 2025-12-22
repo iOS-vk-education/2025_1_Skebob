@@ -26,7 +26,6 @@ struct ClientZoneScreenView: View {
                         .topBarButtonStyle()
                 }
                 .padding(.leading, 16)
-                .padding(.top, 10)
                 Spacer()
                 Button {
                     // TODO: Обработать нажание
@@ -35,7 +34,6 @@ struct ClientZoneScreenView: View {
                         .topBarButtonStyle()
                 }
                 .padding(.trailing, 16)
-                .padding(.top, 10)
             }
             .overlay(
                 Circle()

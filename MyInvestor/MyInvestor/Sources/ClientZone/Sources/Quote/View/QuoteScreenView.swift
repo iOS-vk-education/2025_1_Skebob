@@ -9,6 +9,7 @@ struct QuoteScreenView: View {
     
     @State private var userBalance = UserBalance(balance: 1000.0)
     @State private var favoriteItems: [PromotionItem] = []
+    @State private var selectedPromotionItem: PromotionItem?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -29,7 +30,7 @@ struct QuoteScreenView: View {
 private extension QuoteScreenView {
 
     private var balanceContainer: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 4) {
             Text("Текущий баланс")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(Color.white.opacity(0.6))
@@ -41,11 +42,12 @@ private extension QuoteScreenView {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.leading, 16)
+        .padding(.top, 16)
     }
 
     var favoritesContainer: some View {
         
-        VStack(spacing: 0) {
+        VStack(spacing: 5) {
             Text("Избранное")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
@@ -54,7 +56,9 @@ private extension QuoteScreenView {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 8) {
                     ForEach(favoriteItems) { item in
-                        FavoritesCardView(item: item)
+                        FavoritesCardView(item: item) {
+                            selectedPromotionItem = item
+                        }
                     }
                 }
             }
@@ -70,11 +74,18 @@ private extension QuoteScreenView {
                 .frame(maxWidth: .infinity, alignment: .leading)
             LazyVStack(spacing: 12){
                 ForEach(favoriteItems) { item in
-                    PromotionCardView(item: item)
+                    Button {
+                        selectedPromotionItem = item
+                    } label: {
+                        PromotionCardView(item: item)
+                    }
                 }
             }
         }
         .padding(.horizontal, 10)
+        .fullScreenCover(item: $selectedPromotionItem) { item in
+            PromotionScreenView(item: item)
+        }
     }
     
     private func loadSecurity() {

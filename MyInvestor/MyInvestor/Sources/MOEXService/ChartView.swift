@@ -11,6 +11,7 @@ import Foundation
 
 struct ChartView: View {
     
+    let ticker: String
     @State private var candles: [Candle] = []
     @State private var isLoading = false
 
@@ -42,9 +43,26 @@ struct ChartView: View {
                         yStart: .value("Открытие", candle.open),
                         yEnd: .value("Закрытие", candle.close)
                     )
+                    
                     .foregroundStyle(candle.close >= candle.open ? Color.green : Color.red)
                 }
                 .chartYScale(domain: paddedMin...paddedMax)
+                .chartXAxis {
+                    AxisMarks { _ in
+                        AxisValueLabel()
+                            .foregroundStyle(.white)
+                        AxisGridLine()
+                            .foregroundStyle(.gray.opacity(0.3))
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks { _ in
+                        AxisValueLabel()
+                            .foregroundStyle(.white)
+                        AxisGridLine()
+                            .foregroundStyle(.gray.opacity(0.3))
+                    }
+                }
             }
         }
         .padding(.leading, 30)
@@ -55,9 +73,8 @@ struct ChartView: View {
 
     private func loadCandles() {
         isLoading = true
-        Candle.fetchCandles(ticker: "SBER") { result in
+        Candle.fetchCandles(ticker: ticker) { result in
             DispatchQueue.main.async {
-                print("sber")
                 self.isLoading = false
                 if case .success(let candles) = result {
                     self.candles = candles
@@ -69,5 +86,5 @@ struct ChartView: View {
 }
 
 #Preview {
-    ChartView()
+    ChartView(ticker: "SBER")
 }

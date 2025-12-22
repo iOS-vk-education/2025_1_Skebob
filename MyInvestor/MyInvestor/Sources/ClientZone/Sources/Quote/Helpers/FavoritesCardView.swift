@@ -10,9 +10,10 @@ import SwiftUI
 struct FavoritesCardView: View {
     
     let item: PromotionItem
+    let onDetailTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Image(item.icon)
                     .resizable()
@@ -39,7 +40,7 @@ struct FavoritesCardView: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(item.changeColor)
                 Button("Подробнее"){
-                    print("Открытие графика")
+                    onDetailTap()
                 }
                 .foregroundColor(Color(hex: "000000"))
                 .background(
