@@ -66,7 +66,7 @@ struct ClientZoneScreenView: View {
         case .portfolio:
             Text("Экран portfolio")
         case .settings:
-            Text("Экран settings")
+            SettingsScreenAssembly.assemble()
         }
     }
 }

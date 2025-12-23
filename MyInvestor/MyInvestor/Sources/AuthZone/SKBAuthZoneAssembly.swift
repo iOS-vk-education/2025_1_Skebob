@@ -1,6 +1,8 @@
 //
-//  Created by Dmitriy Permyakov on 21.11.2025.
-//  Copyright © 2025 Skebob. All rights reserved.
+//  AuthScreenAssembly.swift
+//  MyInvestor
+//
+//  Created by Максим Скориков on 22.12.2025.
 //
 
 import SwiftUI
@@ -8,7 +10,7 @@ import SwiftUI
 enum SKBAuthZoneAssembly {
 
     static func assemble() -> AnyView {
-        let view = AuthScreenViewAssembly.assemble()
+        let view = AuthZoneScreenAssembly.assemble()
         return AnyView(view)
     }
 }
