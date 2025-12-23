@@ -4,12 +4,19 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct QuoteScreenView: View {
-    
-    @State private var userBalance = UserBalance(balance: 1000.0)
+    @EnvironmentObject var authViewModel: AuthViewModel
+
+    @State private var userBalance = UserBalance(balance: 100_000.0)
     @State private var favoriteItems: [PromotionItem] = []
+    @State private var allPromotionItems: [PromotionItem] = []
+    @State private var favoriteSecIDs: [String] = []
     @State private var selectedPromotionItem: PromotionItem?
+
+    private let db = Firestore.firestore()
 
     var body: some View {
         VStack(spacing: 16) {
@@ -18,8 +25,9 @@ struct QuoteScreenView: View {
             promotionContainer
         }
         .onAppear {
-            if favoriteItems.isEmpty {
-                loadSecurity()
+            loadUserDataFromFirestore()
+            if allPromotionItems.isEmpty {
+                loadAllSecurities()
             }
         }
     }
@@ -46,55 +54,100 @@ private extension QuoteScreenView {
     }
 
     var favoritesContainer: some View {
-        
         VStack(spacing: 5) {
             Text("Избранное")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 16)
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 8) {
-                    ForEach(favoriteItems) { item in
-                        FavoritesCardView(item: item) {
-                            selectedPromotionItem = item
+                .padding(.leading, 16)
+            
+            if favoriteItems.isEmpty {
+                Text("Нет избранных акций")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                    .padding(.leading, 16)
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 8) {
+                        ForEach(favoriteItems) { item in
+                            FavoritesCardView(item: item) {
+                                selectedPromotionItem = item
+                            }
                         }
                     }
                 }
+                .frame(height: 150)
             }
-            .frame(height: 150)
         }
     }
+
     var promotionContainer: some View {
         VStack(spacing: 0) {
             Text("Акции")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
                 .padding(.bottom, 10)
+                .padding(.leading, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            LazyVStack(spacing: 12){
-                ForEach(favoriteItems) { item in
-                    Button {
-                        selectedPromotionItem = item
-                    } label: {
-                        PromotionCardView(item: item)
+            
+            LazyVStack(spacing: 12) {
+                ForEach(allPromotionItems) { item in
+                    HStack {
+                        Button {
+                            selectedPromotionItem = item
+                        } label: {
+                            PromotionCardView(item: item)
+                        }
+                        Spacer()
+                        Button(action: {
+                            toggleFavorite(for: item.symbol)
+                        }) {
+                            Image(systemName: favoriteSecIDs.contains(item.symbol) ? "star.fill" : "star")
+                                .foregroundColor(.orange)
+                                .padding(8)
+                        }
                     }
+                    .padding(.horizontal, 10)
                 }
             }
         }
-        .padding(.horizontal, 10)
         .fullScreenCover(item: $selectedPromotionItem) { item in
             PromotionScreenView(item: item)
+                .environmentObject(authViewModel)
         }
     }
-    
-    private func loadSecurity() {
-        print("Загрузка акций...")
+
+    // MARK: - Data Loading
+
+    private func loadUserDataFromFirestore() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        db.collection("users").document(uid)
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    return
+                }
+                guard let data = snapshot?.data() else { return }
+
+                DispatchQueue.main.async {
+                    if let balance = data["balance"] as? Double {
+                        self.userBalance = UserBalance(balance: balance)
+                    }
+
+                    self.favoriteSecIDs = (data["favoriteStocks"] as? [String]) ?? []
+                    self.updateFavoriteItems()
+                }
+            }
+    }
+
+    private func loadAllSecurities() {
         Security.fetchSecurity { result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(let security):
-                    self.favoriteItems = security.map { sec in
+                case .success(let securities):
+                    self.allPromotionItems = securities.map { sec in
                         PromotionItem(
                             symbol: sec.secid,
                             name: sec.name,
@@ -103,11 +156,29 @@ private extension QuoteScreenView {
                             icon: "BTCIcon"
                         )
                     }
+                    self.updateFavoriteItems()
+
                 case .failure(let error):
-                    print("Не удалось загрузить акции: \(error)")
-                    self.favoriteItems = []
+                    self.allPromotionItems = []
                 }
             }
+        }
+    }
+
+    private func updateFavoriteItems() {
+        self.favoriteItems = self.allPromotionItems
+            .filter { self.favoriteSecIDs.contains($0.symbol) }
+    }
+
+    private func toggleFavorite(for symbol: String) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        if favoriteSecIDs.contains(symbol) {
+            db.collection("users").document(uid)
+                .updateData(["favoriteStocks": FieldValue.arrayRemove([symbol])])
+        } else {
+            db.collection("users").document(uid)
+                .updateData(["favoriteStocks": FieldValue.arrayUnion([symbol])])
         }
     }
 }

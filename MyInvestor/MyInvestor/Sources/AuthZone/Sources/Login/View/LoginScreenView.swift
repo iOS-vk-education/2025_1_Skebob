@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
  
 // ViewModel для авторизации
 class AuthViewModel: ObservableObject {
@@ -35,8 +36,8 @@ class AuthViewModel: ObservableObject {
                     self?.errorMessage = "Неверная почта или пароль"
                     return
                 }
-
                 self?.isLoggedIn = true
+                self?.initializeUserDataIfNeeded()
             }
         }
     }
@@ -65,7 +66,7 @@ class AuthViewModel: ObservableObject {
         }
 
         // Firebase
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
             DispatchQueue.main.async {
                 if let error = error {
                     let message: String
@@ -85,10 +86,62 @@ class AuthViewModel: ObservableObject {
                     }
                     completion(message)
                 } else {
+                    self?.initializeUserDataIfNeeded()
+                    if let uid = Auth.auth().currentUser?.uid {
+                        self?.db.collection("users").document(uid).getDocument { snapshot, _ in
+                            if let data = snapshot?.data(),
+                               let balance = data["balance"] as? Double,
+                               let portfolio = data["portfolio"] as? [String: Any] {
+                                self?.updatePublicLeaderboard(uid: uid, balance: balance, portfolio: portfolio)
+                            }
+                        }
+                    }
                     completion(nil)
                 }
             }
         }
+    }
+    
+    private let db = Firestore.firestore()
+
+    func initializeUserDataIfNeeded() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+            if let error = error {
+                print("Ошибка Firestore: \(error)")
+                return
+            }
+            
+            if !(snapshot?.exists ?? false) {
+                self?.db.collection("users").document(uid).setData([
+                    "balance": 1000.0,
+                    "favoriteStocks": [] as [String],
+                    "portfolio": [:] as [String: Any],
+                    "createdAt": FieldValue.serverTimestamp()
+                ])
+            }
+        }
+    }
+    
+    private func updatePublicLeaderboard(uid: String, balance: Double, portfolio: [String: Any]) {
+        let portfolioSummary = portfolio.mapValues { stock in
+            if let stockDict = stock as? [String: Any],
+               let shares = stockDict["shares"] as? Int {
+                return ["shares": shares] as [String: Any]
+            }
+            return [:]
+        } as? [String: [String: Any]] ?? [:]
+        
+        let publicData: [String: Any] = [
+            "balance": balance,
+            "portfolioSummary": portfolioSummary,
+            "updatedAt": FieldValue.serverTimestamp()
+        ]
+        
+        db.collection("publicLeaderboard")
+            .document(uid)
+            .setData(publicData, merge: true)
     }
     
     func logout() {
@@ -102,8 +155,171 @@ class AuthViewModel: ObservableObject {
     }
 
     func checkSession() {
-        isLoggedIn = Auth.auth().currentUser != nil
         isCheckingSession = false
+        if let user = Auth.auth().currentUser {
+            isLoggedIn = true
+            initializeUserDataIfNeeded()
+        }
+    }
+    
+    func buyStock(symbol: String, shares: Int, price: Double, completion: @escaping (Bool, String?) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            completion(false, "Пользователь не авторизован")
+            return
+        }
+
+        let totalCost = Double(shares) * price
+        if totalCost <= 0 {
+            completion(false, "Некорректное количество или цена")
+            return
+        }
+
+        let db = Firestore.firestore()
+        let userRef = db.collection("users").document(uid)
+
+        db.runTransaction { (transaction, errorPointer) -> Any? in
+            do {
+                let document = try transaction.getDocument(userRef)
+                guard let userData = document.data() else {
+                    errorPointer?.pointee = NSError(domain: "MyInvestor", code: 0, userInfo: [
+                        NSLocalizedDescriptionKey: "Данные пользователя не найдены"
+                    ])
+                    return nil
+                }
+                
+                let currentBalance = (userData["balance"] as? Double) ?? 0.0
+                
+                guard currentBalance >= totalCost else {
+                    errorPointer?.pointee = NSError(domain: "MyInvestor", code: 1, userInfo: [
+                        NSLocalizedDescriptionKey: "Недостаточно средств"
+                    ])
+                    return nil
+                }
+
+                let newBalance = currentBalance - totalCost
+                transaction.updateData(["balance": newBalance], forDocument: userRef)
+                var portfolio = userData["portfolio"] as? [String: Any] ?? [:]
+                if var existing = portfolio[symbol] as? [String: Any] {
+                    let currentShares = (existing["shares"] as? Int) ?? 0
+                    let currentAvgPrice = (existing["avgPrice"] as? Double) ?? 0.0
+
+                    let newShares = currentShares + shares
+                    let newAvgPrice = ((currentAvgPrice * Double(currentShares)) + totalCost) / Double(newShares)
+
+                    existing["shares"] = newShares
+                    existing["avgPrice"] = newAvgPrice
+                    portfolio[symbol] = existing
+                } else {
+                    portfolio[symbol] = [
+                        "shares": shares,
+                        "avgPrice": price
+                    ]
+                }
+
+                transaction.updateData(["portfolio": portfolio], forDocument: userRef)
+                return nil
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        } completion: { _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(false, error.localizedDescription)
+                } else {
+                    self.db.collection("users").document(uid).getDocument { snapshot, _ in
+                        if let data = snapshot?.data(),
+                           let balance = data["balance"] as? Double,
+                           let portfolio = data["portfolio"] as? [String: Any] {
+                            self.updatePublicLeaderboard(uid: uid, balance: balance, portfolio: portfolio)
+                        }
+                    }
+                    completion(true, nil)
+                }
+            }
+        }
+    }
+    
+    func sellStock(symbol: String, shares: Int, price: Double, completion: @escaping (Bool, String?) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            completion(false, "Пользователь не авторизован")
+            return
+        }
+
+        if shares <= 0 {
+            completion(false, "Некорректное количество")
+            return
+        }
+
+        let db = Firestore.firestore()
+        let userRef = db.collection("users").document(uid)
+
+        db.runTransaction { (transaction, errorPointer) -> Any? in
+            do {
+                let document = try transaction.getDocument(userRef)
+                guard let userData = document.data() else {
+                    errorPointer?.pointee = NSError(domain: "MyInvestor", code: 0, userInfo: [
+                        NSLocalizedDescriptionKey: "Данные пользователя не найдены"
+                    ])
+                    return nil
+                }
+
+                let portfolio = userData["portfolio"] as? [String: Any] ?? [:]
+                
+                guard let stockData = portfolio[symbol] as? [String: Any],
+                      let currentShares = stockData["shares"] as? Int,
+                      currentShares >= shares else {
+                    errorPointer?.pointee = NSError(domain: "MyInvestor", code: 2, userInfo: [
+                        NSLocalizedDescriptionKey: "Недостаточно акций"
+                    ])
+                    return nil
+                }
+
+                let currentBalance = (userData["balance"] as? Double) ?? 0.0
+                let saleAmount = Double(shares) * price
+                let newBalance = currentBalance + saleAmount
+                transaction.updateData(["balance": newBalance], forDocument: userRef)
+
+                var newPortfolio = portfolio
+                
+                if currentShares == shares {
+                    newPortfolio.removeValue(forKey: symbol)
+                } else {
+                    var updatedStock = stockData
+                    updatedStock["shares"] = currentShares - shares
+                    if let avgPrice = updatedStock["avgPrice"] as? Double {
+                        updatedStock["avgPrice"] = avgPrice
+                    }
+                    
+                    newPortfolio[symbol] = updatedStock
+                }
+
+                transaction.updateData(["portfolio": newPortfolio], forDocument: userRef)
+                return nil
+                
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        } completion: { _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    let errorMessage = error.localizedDescription.contains("Недостаточно акций")
+                        ? "Недостаточно акций"
+                        : "Ошибка при продаже: \(error.localizedDescription)"
+                    completion(false, errorMessage)
+                } else {
+                    self.db.collection("users").document(uid).getDocument { snapshot, _ in
+                        if let data = snapshot?.data(),
+                           let balance = data["balance"] as? Double,
+                           let portfolio = data["portfolio"] as? [String: Any] {
+                            self.updatePublicLeaderboard(uid: uid, balance: balance, portfolio: portfolio)
+                        }
+                    }
+                    completion(true, nil)
+                }
+            }
+        }
     }
 }
  

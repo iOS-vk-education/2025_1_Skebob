@@ -62,9 +62,9 @@ struct ClientZoneScreenView: View {
         case .quotes:
             QuoteScreenAssembly.assemble()
         case .rating:
-            Text("Экран rating")
+            LeaderboardScreenAssembly.assemble()
         case .portfolio:
-            Text("Экран portfolio")
+            PortfolioScreenAssembly.assemble()
         case .settings:
             SettingsScreenAssembly.assemble()
         }

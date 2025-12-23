@@ -18,6 +18,14 @@ struct Security: Identifiable {
 
 extension Security {
     
+    static func fetchSecurityAsync() async throws -> [Security] {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetchSecurity { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+    
     static func fetchSecurity(completion: @escaping (Result<[Security], Error>) -> Void) {
         guard let url = URL(string: "https://iss.moex.com/iss/engines/stock/markets/shares/securities.json?" +
                             "iss.only=securities,marketdata&" +
