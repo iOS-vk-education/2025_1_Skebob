@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Foundation
-import Charts
 
 struct Candle: Identifiable, Equatable {
     
@@ -19,17 +18,42 @@ struct Candle: Identifiable, Equatable {
 
 extension Candle {
     
+    static func moexIntervalForPeriod(_ period: ChartPeriod) -> Int {
+        switch period {
+        case .day: return 1
+        case .week: return 60
+        case .month: return 60
+        case .halfYear: return 24
+        case .year: return 7
+        case .fiveYears: return 7
+        }
+    }
+    
+    static func daysBackForPeriod(_ period: ChartPeriod) -> Int {
+        switch period {
+        case .day: return 2
+        case .week: return 14
+        case .month: return 35
+        case .halfYear: return 190
+        case .year: return 370
+        case .fiveYears: return 1900
+        }
+    }
+    
     static func fetchCandles(
         ticker: String,
-        interval: Int = 24,
+        period: ChartPeriod = .month,
         completion: @escaping (Result<[Candle], Error>) -> Void) {
             
         let today = Date()
-        let threeMonthsAgo = Calendar.current.date(byAdding: .month, value: -3, to: today)!
+        let startDate = Calendar.current.date(byAdding: .day, value: -daysBackForPeriod(period), to: today)!
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        let fromStr = formatter.string(from: threeMonthsAgo)
+        let fromStr = formatter.string(from: startDate)
         let tillStr = formatter.string(from: today)
+        
+        let interval = moexIntervalForPeriod(period)
             
         guard let url = URL(string: "https://iss.moex.com/iss/engines/stock/markets/shares/securities/\(ticker)/candles.json?from=\(fromStr)&till=\(tillStr)&interval=\(interval)") else {
             completion(.failure(URLError(.badURL)))

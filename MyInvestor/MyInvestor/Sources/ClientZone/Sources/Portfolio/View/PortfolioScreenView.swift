@@ -111,11 +111,13 @@ struct PortfolioScreenView: View {
                 
                 VStack(alignment: .trailing) {
                     Text(totalProfit >= 0 ? "+" : "")
+                        .foregroundColor(totalProfit >= 0 ? .green : .red)
                         + Text("\(totalProfit, specifier: "%.2f") ₽")
                         .font(.subheadline)
                         .foregroundColor(totalProfit >= 0 ? .green : .red)
                     
                     Text(totalProfit >= 0 ? "+" : "")
+                        .foregroundColor(totalProfit >= 0 ? .green : .red)
                         + Text("\(totalProfitPercent, specifier: "%.2f")%")
                         .font(.caption)
                         .foregroundColor(totalProfit >= 0 ? .green : .red)
@@ -210,13 +212,15 @@ struct PortfolioStockCard: View {
                     .foregroundColor(.white)
 
                 Text(stock.profitLoss >= 0 ? "+" : "")
+                    .foregroundColor(stock.profitColor)
                     + Text("\(stock.profitLoss, specifier: "%.2f") ₽")
                     .font(.subheadline)
                     .foregroundColor(stock.profitColor)
 
                 Text(stock.profitLoss >= 0 ? "+" : "")
+                    .foregroundColor(stock.profitColor)
                     + Text("\(stock.profitLossPercent, specifier: "%.2f")%")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundColor(stock.profitColor)
             }
         }

@@ -17,17 +17,19 @@ struct PromotionScreenView: View {
 
     // UI states
     @State private var shareCount: Int = 1
-    @State private var isFav: Bool = false
+    @State private var isFavorite: Bool = false
     @State private var favoriteSecIDs: [String] = []
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var currentBalance: Double = 100_000.0
 
+    @State private var shouldLoadChart = false
+    @State private var selectedPeriod: ChartPeriod = .month
+    
     private let db = Firestore.firestore()
 
     var body: some View {
         VStack {
-            // Цена и изменение
             VStack(spacing: 16) {
                 Text(item.formattedPrice)
                     .font(.system(size: 40, weight: .bold))
@@ -41,9 +43,19 @@ struct PromotionScreenView: View {
             }
             .padding(.leading, 16)
 
-            // График
-            ChartView(ticker: item.symbol)
-
+            HStack(spacing: 8) {
+                timePeriodButton(title: "День", period: .day) { setSelectedPeriod(.day) }
+                timePeriodButton(title: "Неделя", period: .week) { setSelectedPeriod(.week) }
+                timePeriodButton(title: "Месяц", period: .month) { setSelectedPeriod(.month) }
+                timePeriodButton(title: "6 мес", period: .halfYear) { setSelectedPeriod(.halfYear) }
+                timePeriodButton(title: "Год", period: .year) { setSelectedPeriod(.year) }
+                timePeriodButton(title: "5 лет", period: .fiveYears) { setSelectedPeriod(.fiveYears) }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+            
+            chartSection
+            
             HStack {
                 Text("Количество:")
                     .foregroundColor(.white)
@@ -75,11 +87,54 @@ struct PromotionScreenView: View {
         }
         .onAppear {
             loadUserData()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                shouldLoadChart = true
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var chartSection: some View {
+        if shouldLoadChart {
+            ChartView(ticker: item.symbol, period: selectedPeriod)
+                .id("\(item.symbol)-\(selectedPeriod)")
+                .transition(.opacity)
+        } else {
+            Rectangle()
+                .fill(Color(hex: "1E1E1E"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(
+                    ProgressView()
+                        .tint(.white)
+                )
+                .cornerRadius(12)
         }
     }
 
     // MARK: - UI Components
 
+    private func timePeriodButton(title: String, period: ChartPeriod, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(selectedPeriod == period
+                    ? SKBColor.coolYellowColor.suiColor
+                    : Color.white.opacity(0.8))
+                .frame(height: 24)
+                .overlay(
+                    Text(title)
+                        .foregroundColor(.black)
+                        .font(.system(size: 12, weight: selectedPeriod == period ? .semibold : .medium))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func setSelectedPeriod(_ period: ChartPeriod) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedPeriod = period
+        }
+    }
+    
     private var topBar: some View {
         HStack(spacing: 0) {
             Button {
@@ -102,7 +157,7 @@ struct PromotionScreenView: View {
                 toggleFavorite()
             } label: {
                 Image("StarIcon")
-                    .topBarButtonStyle(color: isFav ? SKBColor.coolYellowColor.suiColor : .white.opacity(0.4))
+                    .topBarButtonStyle(color: isFavorite ? SKBColor.coolYellowColor.suiColor : .white.opacity(0.4))
             }
             .padding(.trailing, 16)
         }
@@ -194,7 +249,7 @@ struct PromotionScreenView: View {
 
                     // Избранное
                     self.favoriteSecIDs = (data["favoriteStocks"] as? [String]) ?? []
-                    self.isFav = self.favoriteSecIDs.contains(self.item.symbol)
+                    self.isFavorite = self.favoriteSecIDs.contains(self.item.symbol)
                 }
             }
     }
@@ -202,7 +257,7 @@ struct PromotionScreenView: View {
     private func toggleFavorite() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        if isFav {
+        if isFavorite {
             db.collection("users").document(uid)
                 .updateData(["favoriteStocks": FieldValue.arrayRemove([item.symbol])])
         } else {
@@ -210,7 +265,7 @@ struct PromotionScreenView: View {
                 .updateData(["favoriteStocks": FieldValue.arrayUnion([item.symbol])])
         }
         
-        isFav.toggle()
+        isFavorite.toggle()
     }
 }
 
