@@ -7,7 +7,14 @@ import SwiftUI
 
 struct ClientZoneScreenView: View {
     
+    @StateObject private var authViewModel = AuthViewModel()
+    
     @State private var selectedTab: SKBAppTabKind = .quotes
+    @State private var isSearchPresented = false
+    
+    @State private var allSecurities: [PromotionItem] = []
+    @State private var favoriteSecIDs: [String] = []
+    @State private var selectedPromotionItem: PromotionItem?
 
     var body: some View {
         
@@ -17,6 +24,7 @@ struct ClientZoneScreenView: View {
         .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "161514").ignoresSafeArea())
+        .environmentObject(authViewModel) 
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
                 Button {
@@ -28,7 +36,7 @@ struct ClientZoneScreenView: View {
                 .padding(.leading, 16)
                 Spacer()
                 Button {
-                    // TODO: Обработать нажание
+                    isSearchPresented = true
                 } label: {
                     Image("SearchIcon")
                         .topBarButtonStyle()
@@ -50,8 +58,45 @@ struct ClientZoneScreenView: View {
                 )
             )
         }
+        .sheet(isPresented: $isSearchPresented) {
+            SearchScreenView(
+                allSecurities: allSecurities,
+                favoriteSecIDs: $favoriteSecIDs,
+                onSelect: { item in
+                    selectedPromotionItem = item
+                }
+            )
+            .environmentObject(authViewModel)
+        }
+        .fullScreenCover(item: $selectedPromotionItem) { item in
+            PromotionScreenView(item: item)
+                .environmentObject(authViewModel)
+        }
         .safeAreaInset(edge: .bottom) {
             CustomTabBar(selectedTab: $selectedTab)
+        }
+        .onAppear {
+            loadSecuritiesIfNeeded()
+        }
+    }
+    
+    private func loadSecuritiesIfNeeded() {
+        if allSecurities.isEmpty {
+            Security.fetchSecurity { result in
+                DispatchQueue.main.async {
+                    if case .success(let securities) = result {
+                        self.allSecurities = securities.map { sec in
+                            PromotionItem(
+                                symbol: sec.secid,
+                                name: sec.name,
+                                price: sec.price,
+                                changePercent: sec.changePercent,
+                                icon: "BTCIcon"
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -60,7 +105,11 @@ struct ClientZoneScreenView: View {
         
         switch tab {
         case .quotes:
-            QuoteScreenAssembly.assemble()
+            QuoteScreenAssembly.assemble(
+                allSecurities: allSecurities,
+                favoriteSecIDs: $favoriteSecIDs,
+                selectedPromotionItem: $selectedPromotionItem
+            )
         case .rating:
             LeaderboardScreenAssembly.assemble()
         case .portfolio:

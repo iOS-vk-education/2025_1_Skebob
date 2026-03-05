@@ -10,25 +10,25 @@ import FirebaseAuth
 struct QuoteScreenView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
 
+    var allSecurities: [PromotionItem]
+    @Binding var favoriteSecIDs: [String]
+    @Binding var selectedPromotionItem: PromotionItem?
+    
     @State private var userBalance = UserBalance(balance: 100_000.0)
-    @State private var favoriteItems: [PromotionItem] = []
-    @State private var allPromotionItems: [PromotionItem] = []
-    @State private var favoriteSecIDs: [String] = []
-    @State private var selectedPromotionItem: PromotionItem?
-
+    
     private let db = Firestore.firestore()
+    
+    private var favoriteItems: [PromotionItem] {
+        allSecurities.filter { favoriteSecIDs.contains($0.symbol) }
+    }
 
     var body: some View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
-            promotionContainer
         }
         .onAppear {
             loadUserDataFromFirestore()
-            if allPromotionItems.isEmpty {
-                loadAllSecurities()
-            }
         }
     }
 }
@@ -83,42 +83,6 @@ private extension QuoteScreenView {
         }
     }
 
-    var promotionContainer: some View {
-        VStack(spacing: 0) {
-            Text("Акции")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.white)
-                .padding(.bottom, 10)
-                .padding(.leading, 16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            LazyVStack(spacing: 12) {
-                ForEach(allPromotionItems) { item in
-                    HStack {
-                        Button {
-                            selectedPromotionItem = item
-                        } label: {
-                            PromotionCardView(item: item)
-                        }
-                        Spacer()
-                        Button(action: {
-                            toggleFavorite(for: item.symbol)
-                        }) {
-                            Image(systemName: favoriteSecIDs.contains(item.symbol) ? "star.fill" : "star")
-                                .foregroundColor(.orange)
-                                .padding(8)
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                }
-            }
-        }
-        .fullScreenCover(item: $selectedPromotionItem) { item in
-            PromotionScreenView(item: item)
-                .environmentObject(authViewModel)
-        }
-    }
-
     // MARK: - Data Loading
 
     private func loadUserDataFromFirestore() {
@@ -135,51 +99,9 @@ private extension QuoteScreenView {
                     if let balance = data["balance"] as? Double {
                         self.userBalance = UserBalance(balance: balance)
                     }
-
                     self.favoriteSecIDs = (data["favoriteStocks"] as? [String]) ?? []
-                    self.updateFavoriteItems()
                 }
             }
-    }
-
-    private func loadAllSecurities() {
-        Security.fetchSecurity { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let securities):
-                    self.allPromotionItems = securities.map { sec in
-                        PromotionItem(
-                            symbol: sec.secid,
-                            name: sec.name,
-                            price: sec.price,
-                            changePercent: sec.changePercent,
-                            icon: "BTCIcon"
-                        )
-                    }
-                    self.updateFavoriteItems()
-
-                case .failure(let error):
-                    self.allPromotionItems = []
-                }
-            }
-        }
-    }
-
-    private func updateFavoriteItems() {
-        self.favoriteItems = self.allPromotionItems
-            .filter { self.favoriteSecIDs.contains($0.symbol) }
-    }
-
-    private func toggleFavorite(for symbol: String) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-
-        if favoriteSecIDs.contains(symbol) {
-            db.collection("users").document(uid)
-                .updateData(["favoriteStocks": FieldValue.arrayRemove([symbol])])
-        } else {
-            db.collection("users").document(uid)
-                .updateData(["favoriteStocks": FieldValue.arrayUnion([symbol])])
-        }
     }
 }
 

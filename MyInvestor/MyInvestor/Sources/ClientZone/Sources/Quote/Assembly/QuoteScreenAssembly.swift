@@ -6,9 +6,15 @@
 import SwiftUI
 
 enum QuoteScreenAssembly {
-
-    static func assemble() -> some View {
-        let view = QuoteScreenView()
-        return view
+    static func assemble(
+        allSecurities: [PromotionItem],
+        favoriteSecIDs: Binding<[String]>,
+        selectedPromotionItem: Binding<PromotionItem?>
+    ) -> QuoteScreenView {
+        QuoteScreenView(
+            allSecurities: allSecurities,
+            favoriteSecIDs: favoriteSecIDs,
+            selectedPromotionItem: selectedPromotionItem
+        )
     }
 }
