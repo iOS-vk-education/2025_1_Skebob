@@ -9,6 +9,7 @@ struct ClientZoneScreenView: View {
     
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var portfolioViewModel = PortfolioViewModel()
+    @StateObject private var newsViewModel = NewsViewModel()
     
     @State private var selectedTab: SKBAppTabKind = .quotes
     @State private var isSearchPresented = false
@@ -20,14 +21,14 @@ struct ClientZoneScreenView: View {
 
     var body: some View {
         
-        ScrollView{
+        ScrollView {
             content(for: selectedTab)
         }
-        .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "161514").ignoresSafeArea())
         .environmentObject(authViewModel)
         .environmentObject(portfolioViewModel)
+        .environmentObject(newsViewModel)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
                 Button {
@@ -120,6 +121,7 @@ struct ClientZoneScreenView: View {
                 favoriteSecIDs: $favoriteSecIDs,
                 selectedPromotionItem: $selectedPromotionItem
             )
+            .environmentObject(newsViewModel)
         case .rating:
             LeaderboardScreenAssembly.assemble()
         case .portfolio:

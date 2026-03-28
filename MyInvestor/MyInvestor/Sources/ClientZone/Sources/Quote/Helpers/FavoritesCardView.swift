@@ -60,8 +60,8 @@ struct FavoritesCardView: View {
                         ]),
                         startPoint: .bottomLeading,
                         endPoint: .topTrailing
+                    )
                 )
-            )
         )
     }
 }
@@ -75,18 +75,12 @@ struct PromotionCardView: View {
             Image(item.icon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 36, height: 36)
+                .frame(width: 36, height: 36, alignment: .leading)
                 .clipShape(Circle())
             Text(item.symbol)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)
                 .frame(width: 50, alignment: .leading)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            Text(item.name)
-                .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.7))
-                .frame(maxWidth: 200, alignment: .leading)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Text(item.formattedPrice)

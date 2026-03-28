@@ -34,7 +34,7 @@ struct SearchScreenView: View {
             VStack(spacing: 0) {
                 HStack {
                     Image(systemName: "magnifyingglass")
-                    TextField("Поиск акции...", text: $searchText)
+                    TextField("", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .foregroundColor(.white)
                     if !searchText.isEmpty {
@@ -75,13 +75,18 @@ struct SearchScreenView: View {
                     }
                 }
             }
-            .navigationTitle("Все акции")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Все акции")
+                        .foregroundColor(.white)
+                        .font(.system(size: 17, weight: .semibold))
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
                         dismiss()
                     }
+                    .foregroundColor(.white)
                 }
             }
             .foregroundColor(.white)

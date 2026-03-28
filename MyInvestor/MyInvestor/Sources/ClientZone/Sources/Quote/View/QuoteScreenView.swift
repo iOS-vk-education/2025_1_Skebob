@@ -9,29 +9,34 @@ import FirebaseAuth
 
 struct QuoteScreenView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-
+    @EnvironmentObject var newsVM: NewsViewModel
+    
     var allSecurities: [PromotionItem]
     @Binding var favoriteSecIDs: [String]
     @Binding var selectedPromotionItem: PromotionItem?
     
     @State private var userBalance = UserBalance(balance: 100_000.0)
-    
     private let db = Firestore.firestore()
     
     private var favoriteItems: [PromotionItem] {
         allSecurities.filter { favoriteSecIDs.contains($0.symbol) }
+    }
+    
+    private var favoriteTickers: [String] {
+        favoriteItems.map { $0.symbol }
     }
 
     var body: some View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
-            Text("Новости")
-                .foregroundColor(.white)
-            
+            newsSection            
         }
         .onAppear {
             loadUserDataFromFirestore()
+            if newsVM.items.isEmpty {
+                Task { await newsVM.load(tickers: favoriteTickers) }
+            }
         }
     }
 }
@@ -70,7 +75,7 @@ private extension QuoteScreenView {
                     .foregroundColor(.gray)
                     .padding(.leading, 16)
                     .frame(height: 150)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 8) {
@@ -83,6 +88,119 @@ private extension QuoteScreenView {
                 }
                 .frame(height: 150)
             }
+        }
+    }
+    
+    private var newsSection: some View {
+        VStack(spacing: 5) {
+            Text("Новости")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 16)
+            
+            if newsVM.loading && newsVM.items.isEmpty {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.white)
+                    .frame(height: 250)
+                    .frame(maxWidth: .infinity)
+            } else if newsVM.items.isEmpty {
+                Text("Нет новостей")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                    .padding(.leading, 16)
+                    .frame(height: 250)
+                    .frame(maxWidth: .infinity)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(newsVM.items) { item in
+                        NewsRow(item: item)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+    
+    private struct NewsRow: View {
+        let item: NewsItem
+        
+        var body: some View {
+            Button {
+                UIApplication.shared.open(item.url)
+            } label: {
+                VStack(alignment: .leading, spacing: 8) {
+                    if let imageUrl = item.imageUrl {
+                        AsyncImage(url: imageUrl) { phase in
+                            switch phase {
+                            case .empty:
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.05))
+                                    .frame(height: 120)
+                                    .overlay(
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
+                                            .tint(.white.opacity(0.5))
+                                    )
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 120)
+                                    .clipped()
+                            case .failure:
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.05))
+                                    .frame(height: 120)
+                                    .overlay(
+                                        Image(systemName: "photo")
+                                            .foregroundColor(.gray)
+                                    )
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .cornerRadius(8)
+                    }
+                    
+                    Text(item.title)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                    
+                    Text(item.summary)
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(2)
+                    
+                    HStack {
+                        Text(item.source)
+                            .font(.system(size: 11))
+                            .foregroundColor(.blue)
+                        Text(item.date, style: .relative)
+                            .font(.system(size: 11))
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: "FFFFFF").opacity(0.05),
+                                Color(hex: "FFBC11").opacity(0.08)
+                                ]),
+                                startPoint: .bottomLeading,
+                                endPoint: .topTrailing
+                            )
+                        )
+                )
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 
