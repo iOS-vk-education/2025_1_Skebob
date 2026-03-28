@@ -26,6 +26,9 @@ struct QuoteScreenView: View {
         VStack(spacing: 16) {
             balanceContainer
             favoritesContainer
+            Text("Новости")
+                .foregroundColor(.white)
+            
         }
         .onAppear {
             loadUserDataFromFirestore()

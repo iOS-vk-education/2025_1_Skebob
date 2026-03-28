@@ -199,7 +199,7 @@ struct PortfolioStockCard: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
-                Text("Средняя цена: \(stock.avgBuyPrice, specifier: "%.2f") ₽")
+                Text("Средняя цена закупки: \(stock.avgBuyPrice, specifier: "%.2f") ₽")
                     .font(.caption)
                     .foregroundColor(.gray)
             }

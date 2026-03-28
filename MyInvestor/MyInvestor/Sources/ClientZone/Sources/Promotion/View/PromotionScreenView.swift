@@ -14,8 +14,8 @@ struct PromotionScreenView: View {
     let item: PromotionItem
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var portfolioViewModel: PortfolioViewModel
 
-    // UI states
     @State private var shareCount: Int = 1
     @State private var isFavorite: Bool = false
     @State private var favoriteSecIDs: [String] = []
@@ -179,7 +179,7 @@ struct PromotionScreenView: View {
 
     private var buyButton: some View {
         Button {
-            authViewModel.buyStock(
+            portfolioViewModel.buyStock(
                 symbol: item.symbol,
                 shares: shareCount,
                 price: item.price
@@ -207,7 +207,7 @@ struct PromotionScreenView: View {
 
     private var sellButton: some View {
         Button {
-            authViewModel.sellStock(
+            portfolioViewModel.sellStock(
                 symbol: item.symbol,
                 shares: shareCount,
                 price: item.price

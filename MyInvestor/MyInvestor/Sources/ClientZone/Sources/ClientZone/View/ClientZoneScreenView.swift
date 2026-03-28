@@ -8,9 +8,11 @@ import SwiftUI
 struct ClientZoneScreenView: View {
     
     @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var portfolioViewModel = PortfolioViewModel()
     
     @State private var selectedTab: SKBAppTabKind = .quotes
     @State private var isSearchPresented = false
+    @State private var isProfilePresented = false
     
     @State private var allSecurities: [PromotionItem] = []
     @State private var favoriteSecIDs: [String] = []
@@ -24,11 +26,12 @@ struct ClientZoneScreenView: View {
         .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "161514").ignoresSafeArea())
-        .environmentObject(authViewModel) 
+        .environmentObject(authViewModel)
+        .environmentObject(portfolioViewModel)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
                 Button {
-                    // TODO: Обработать нажание
+                    isProfilePresented = true
                 } label: {
                     Image("ProfileIcon")
                         .topBarButtonStyle()
@@ -58,6 +61,11 @@ struct ClientZoneScreenView: View {
                 )
             )
         }
+        .sheet(isPresented: $isProfilePresented) {
+            ProfileView(authViewModel: authViewModel)
+                .environmentObject(authViewModel)
+                .environmentObject(portfolioViewModel)
+        }
         .sheet(isPresented: $isSearchPresented) {
             SearchScreenView(
                 allSecurities: allSecurities,
@@ -67,10 +75,12 @@ struct ClientZoneScreenView: View {
                 }
             )
             .environmentObject(authViewModel)
+            .environmentObject(portfolioViewModel)
         }
         .fullScreenCover(item: $selectedPromotionItem) { item in
             PromotionScreenView(item: item)
                 .environmentObject(authViewModel)
+                .environmentObject(portfolioViewModel)
         }
         .safeAreaInset(edge: .bottom) {
             CustomTabBar(selectedTab: $selectedTab)
