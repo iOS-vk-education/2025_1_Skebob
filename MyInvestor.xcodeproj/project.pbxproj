@@ -56,6 +56,7 @@
 		E23DDDA62F8F8E5000F4C272 /* Palettes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23DDD6B2F8F8E5000F4C272 /* Palettes.swift */; };
 		E23DDDA72F8F8E5000F4C272 /* RootScreenAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23DDD0E2F8F8E5000F4C272 /* RootScreenAssembly.swift */; };
 		E2F1A1014A11000000A1B2C3 /* DailyLoginRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F1A1004A11000000A1B2C3 /* DailyLoginRewardView.swift */; };
+		E2F1A1024A11000000A1B2C3 /* DailyLoginRewardAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F1A1034A11000000A1B2C3 /* DailyLoginRewardAssembly.swift */; };
 		E2A6E22F2F7805EF00C5998B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E2A6E22E2F7805EF00C5998B /* FirebaseAuth */; };
 		E2A6E2312F7805EF00C5998B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2A6E2302F7805EF00C5998B /* FirebaseCore */; };
 		E2A6E2332F7805EF00C5998B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E2A6E2322F7805EF00C5998B /* FirebaseFirestore */; };
@@ -66,6 +67,7 @@
 		E23DDD102F8F8E5000F4C272 /* RootScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootScreenView.swift; sourceTree = "<group>"; };
 		E23DDD132F8F8E5000F4C272 /* MyInvestorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInvestorApp.swift; sourceTree = "<group>"; };
 		E2F1A1004A11000000A1B2C3 /* DailyLoginRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyLoginRewardView.swift; sourceTree = "<group>"; };
+		E2F1A1034A11000000A1B2C3 /* DailyLoginRewardAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyLoginRewardAssembly.swift; sourceTree = "<group>"; };
 		E23DDD152F8F8E5000F4C272 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E23DDD172F8F8E5000F4C272 /* AuthZoneScreenAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthZoneScreenAssembly.swift; sourceTree = "<group>"; };
 		E23DDD192F8F8E5000F4C272 /* AuthZoneScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthZoneScreenView.swift; sourceTree = "<group>"; };
@@ -139,7 +141,6 @@
 		E23DDD112F8F8E5000F4C272 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				E2F1A1004A11000000A1B2C3 /* DailyLoginRewardView.swift */,
 				E23DDD102F8F8E5000F4C272 /* RootScreenView.swift */,
 			);
 			path = View;
@@ -298,6 +299,31 @@
 				E23DDD312F8F8E5000F4C272 /* ClientZoneScreenView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		E2F1A1044A11000000A1B2C3 /* Assembly */ = {
+			isa = PBXGroup;
+			children = (
+				E2F1A1034A11000000A1B2C3 /* DailyLoginRewardAssembly.swift */,
+			);
+			path = Assembly;
+			sourceTree = "<group>";
+		};
+		E2F1A1054A11000000A1B2C3 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				E2F1A1004A11000000A1B2C3 /* DailyLoginRewardView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		E2F1A1064A11000000A1B2C3 /* DailyLoginReward */ = {
+			isa = PBXGroup;
+			children = (
+				E2F1A1044A11000000A1B2C3 /* Assembly */,
+				E2F1A1054A11000000A1B2C3 /* View */,
+			);
+			path = DailyLoginReward;
 			sourceTree = "<group>";
 		};
 		E23DDD332F8F8E5000F4C272 /* ClientZone */ = {
@@ -546,6 +572,7 @@
 				E23DDD332F8F8E5000F4C272 /* ClientZone */,
 				E23DDD382F8F8E5000F4C272 /* Leaderboard */,
 				E23DDD3D2F8F8E5000F4C272 /* News */,
+				E2F1A1064A11000000A1B2C3 /* DailyLoginReward */,
 				E23DDD442F8F8E5000F4C272 /* Portfolio */,
 				E23DDD4B2F8F8E5000F4C272 /* Profile */,
 				E23DDD522F8F8E5000F4C272 /* Promotion */,
@@ -782,6 +809,7 @@
 				E23DDDA62F8F8E5000F4C272 /* Palettes.swift in Sources */,
 				E23DDDA72F8F8E5000F4C272 /* RootScreenAssembly.swift in Sources */,
 				E2F1A1014A11000000A1B2C3 /* DailyLoginRewardView.swift in Sources */,
+				E2F1A1024A11000000A1B2C3 /* DailyLoginRewardAssembly.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -30,7 +30,7 @@ struct RootScreenView: View {
             }
         }
         .fullScreenCover(isPresented: $authViewModel.isDailyRewardPresented) {
-            DailyLoginRewardView(
+            DailyLoginRewardAssembly.assemble(
                 day: authViewModel.dailyRewardDay,
                 amount: authViewModel.dailyRewardAmount,
                 onClose: authViewModel.closeDailyRewardPopup
