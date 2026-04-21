@@ -7,15 +7,21 @@ import SwiftUI
 
 struct RootScreenView: View {
 
-    /// Флаг авторизации в приложении
-    @State
-    var isAuthed: Bool = false
+    @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
-        if isAuthed {
-            SKBClientZoneAssembly.assemble()
-        } else {
-            SKBAuthZoneAssembly.assemble()
+        Group {
+            if authViewModel.isCheckingSession {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .orange))
+            } else if authViewModel.isLoggedIn {
+                SKBClientZoneAssembly.assemble()
+            } else {
+                SKBAuthZoneAssembly.assemble()
+            }
+        }
+        .onAppear {
+            authViewModel.checkSession()
         }
     }
 }

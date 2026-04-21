@@ -7,35 +7,45 @@ import SwiftUI
 
 struct ClientZoneScreenView: View {
     
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var portfolioViewModel = PortfolioViewModel()
+    @StateObject private var newsViewModel = NewsViewModel()
+    
     @State private var selectedTab: SKBAppTabKind = .quotes
+    @State private var isSearchPresented = false
+    @State private var isProfilePresented = false
+    
+    @State private var allSecurities: [PromotionItem] = []
+    @State private var favoriteSecIDs: [String] = []
+    @State private var selectedPromotionItem: PromotionItem?
 
     var body: some View {
         
-        ScrollView{
+        ScrollView {
             content(for: selectedTab)
         }
-        .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "161514").ignoresSafeArea())
+        .environmentObject(authViewModel)
+        .environmentObject(portfolioViewModel)
+        .environmentObject(newsViewModel)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
                 Button {
-                    // TODO: Обработать нажание
+                    isProfilePresented = true
                 } label: {
                     Image("ProfileIcon")
                         .topBarButtonStyle()
                 }
                 .padding(.leading, 16)
-                .padding(.top, 10)
                 Spacer()
                 Button {
-                    // TODO: Обработать нажание
+                    isSearchPresented = true
                 } label: {
                     Image("SearchIcon")
                         .topBarButtonStyle()
                 }
                 .padding(.trailing, 16)
-                .padding(.top, 10)
             }
             .overlay(
                 Circle()
@@ -52,8 +62,52 @@ struct ClientZoneScreenView: View {
                 )
             )
         }
+        .sheet(isPresented: $isProfilePresented) {
+            ProfileView(authViewModel: authViewModel)
+                .environmentObject(authViewModel)
+                .environmentObject(portfolioViewModel)
+        }
+        .sheet(isPresented: $isSearchPresented) {
+            SearchScreenView(
+                allSecurities: allSecurities,
+                favoriteSecIDs: $favoriteSecIDs,
+                onSelect: { item in
+                    selectedPromotionItem = item
+                }
+            )
+            .environmentObject(authViewModel)
+            .environmentObject(portfolioViewModel)
+        }
+        .fullScreenCover(item: $selectedPromotionItem) { item in
+            PromotionScreenView(item: item)
+                .environmentObject(authViewModel)
+                .environmentObject(portfolioViewModel)
+        }
         .safeAreaInset(edge: .bottom) {
             CustomTabBar(selectedTab: $selectedTab)
+        }
+        .onAppear {
+            loadSecuritiesIfNeeded()
+        }
+    }
+    
+    private func loadSecuritiesIfNeeded() {
+        if allSecurities.isEmpty {
+            Security.fetchSecurity { result in
+                DispatchQueue.main.async {
+                    if case .success(let securities) = result {
+                        self.allSecurities = securities.map { sec in
+                            PromotionItem(
+                                symbol: sec.secid,
+                                name: sec.name,
+                                price: sec.price,
+                                changePercent: sec.changePercent,
+                                icon: "BTCIcon"
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -62,13 +116,18 @@ struct ClientZoneScreenView: View {
         
         switch tab {
         case .quotes:
-            QuoteScreenAssembly.assemble()
+            QuoteScreenAssembly.assemble(
+                allSecurities: allSecurities,
+                favoriteSecIDs: $favoriteSecIDs,
+                selectedPromotionItem: $selectedPromotionItem
+            )
+            .environmentObject(newsViewModel)
         case .rating:
-            Text("Экран rating")
+            LeaderboardScreenAssembly.assemble()
         case .portfolio:
-            Text("Экран portfolio")
+            PortfolioScreenAssembly.assemble()
         case .settings:
-            Text("Экран settings")
+            SettingsScreenAssembly.assemble()
         }
     }
 }
