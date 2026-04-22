@@ -188,11 +188,13 @@ class AuthViewModel: ObservableObject {
                     let lastDay = self.calendar.startOfDay(for: lastActiveDate)
                     let dayDiff = self.calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
 
-                    if dayDiff <= 0 {
+                    if dayDiff == 0 {
                         return nil
                     } else if dayDiff == 1 {
                         newStreak = max(currentStreak, 1) + 1
                     } else {
+                        // If date jumped backwards/forwards by more than one day,
+                        // restart streak so reward logic recovers instead of freezing.
                         newStreak = 1
                     }
                 } else {
