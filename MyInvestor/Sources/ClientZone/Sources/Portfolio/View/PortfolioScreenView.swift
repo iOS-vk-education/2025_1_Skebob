@@ -38,6 +38,7 @@ struct PortfolioScreenView: View {
 
     var body: some View {
         ZStack {
+            Color(hex: "161514").ignoresSafeArea()
             if isLoading {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: Color(red: 1.0, green: 0.5, blue: 0.0)))
@@ -54,6 +55,7 @@ struct PortfolioScreenView: View {
                         }
                         .padding(.horizontal, 20)
                     }
+                    .padding(.top, 80)
                 }
             }
 

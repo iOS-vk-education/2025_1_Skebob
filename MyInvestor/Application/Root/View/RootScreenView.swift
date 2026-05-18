@@ -30,16 +30,22 @@ struct RootScreenView: View {
             }
         }
         .fullScreenCover(isPresented: $authViewModel.isDailyRewardPresented) {
-            DailyLoginRewardAssembly.assemble(
-                day: authViewModel.dailyRewardDay,
-                amount: authViewModel.dailyRewardAmount,
-                onClose: authViewModel.closeDailyRewardPopup
-            )
-        }
+                    DailyLoginRewardAssembly.assemble(
+                        currentDay: $authViewModel.dailyRewardDay,
+                        amount: authViewModel.dailyRewardAmount,
+                        onClaim: {
+                            authViewModel.claimDailyReward { success in
+                                if success {
+                                }
+                            }
+                        },
+                        onClose: {
+                            authViewModel.closeDailyRewardPopup()
+                        }
+                    )
+                }
     }
 }
-
-// MARK: - Preview
 
 #Preview {
     RootScreenView()

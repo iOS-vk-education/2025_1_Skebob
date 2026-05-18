@@ -27,10 +27,16 @@ struct QuoteScreenView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            balanceContainer
-            favoritesContainer
-            newsSection            
+        ZStack {
+            Color(hex: "161514").ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 16) {
+                    balanceContainer
+                    favoritesContainer
+                    newsSection
+                }
+                .padding(.top, 80)
+            }
         }
         .onAppear {
             loadUserDataFromFirestore()

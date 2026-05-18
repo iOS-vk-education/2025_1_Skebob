@@ -20,28 +20,46 @@ struct ClientZoneScreenView: View {
     @State private var selectedPromotionItem: PromotionItem?
 
     var body: some View {
-        
-        ScrollView {
-            content(for: selectedTab)
+
+        ZStack {
+            Color(hex: "161514").ignoresSafeArea()
+            
+            TabView(selection: $selectedTab) {
+                QuoteScreenAssembly.assemble(
+                    allSecurities: allSecurities,
+                    favoriteSecIDs: $favoriteSecIDs,
+                    selectedPromotionItem: $selectedPromotionItem
+                )
+                .environmentObject(newsViewModel)
+                .tabItem { Label("Котировки", systemImage: "chart.line.uptrend.xyaxis") }
+                .tag(SKBAppTabKind.quotes)
+                
+                 LeaderboardScreenAssembly.assemble()
+                    .tabItem { Label("Рейтинг", systemImage: "trophy.fill") }
+                    .tag(SKBAppTabKind.rating)
+                
+                 PortfolioScreenAssembly.assemble()
+                    .tabItem { Label("Портфель", systemImage: "briefcase.fill") }
+                    .tag(SKBAppTabKind.portfolio)
+                
+                 SettingsScreenAssembly.assemble()
+                    .tabItem { Label("Настройки", systemImage: "gearshape.fill") }
+                    .tag(SKBAppTabKind.settings)
+            }
+            .background(.clear)
+            .environmentObject(authViewModel)
+            .environmentObject(portfolioViewModel)
+            .environmentObject(newsViewModel)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "161514").ignoresSafeArea())
-        .environmentObject(authViewModel)
-        .environmentObject(portfolioViewModel)
-        .environmentObject(newsViewModel)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
-                Button {
-                    isProfilePresented = true
-                } label: {
-                    Image("ProfileIcon")
-                        .topBarButtonStyle()
-                }
-                .padding(.leading, 16)
+                Button { isProfilePresented = true } label: {
+                    Image("ProfileIcon").topBarButtonStyle()
+                }.padding(.leading, 16)
+                
                 Spacer()
-                Button {
-                    authViewModel.presentDailyRewardPopup()
-                } label: {
+                
+                Button { authViewModel.presentDailyRewardPopup() } label: {
                     Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
@@ -49,29 +67,27 @@ struct ClientZoneScreenView: View {
                         .background(Color.white.opacity(0.14))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                
                 Spacer()
-                Button {
-                    isSearchPresented = true
-                } label: {
-                    Image("SearchIcon")
-                        .topBarButtonStyle()
-                }
-                .padding(.trailing, 16)
+                
+                Button { isSearchPresented = true } label: {
+                    Image("SearchIcon").topBarButtonStyle()
+                }.padding(.trailing, 16)
             }
             .overlay(
                 Circle()
                     .fill(SKBColor.ambientAppColor_1.suiColor.opacity(0.1))
-                .frame(width: 278, height: 278)
-                .blur(radius: 200)
-                .offset(y: -120)
-                .overlay(
-                    Circle()
-                    .fill(SKBColor.ambientAppColor_2.suiColor.opacity(0.2))
-                    .frame(width: 167, height: 167)
-                    .blur(radius: 100)
-                    .offset(y: -100)
-                )
-                .allowsHitTesting(false)
+                    .frame(width: 278, height: 278)
+                    .blur(radius: 200)
+                    .offset(y: -120)
+                    .overlay(
+                        Circle()
+                        .fill(SKBColor.ambientAppColor_2.suiColor.opacity(0.2))
+                        .frame(width: 167, height: 167)
+                        .blur(radius: 100)
+                        .offset(y: -100)
+                    )
+                    .allowsHitTesting(false)
             )
         }
         .sheet(isPresented: $isProfilePresented) {
@@ -83,9 +99,7 @@ struct ClientZoneScreenView: View {
             SearchScreenView(
                 allSecurities: allSecurities,
                 favoriteSecIDs: $favoriteSecIDs,
-                onSelect: { item in
-                    selectedPromotionItem = item
-                }
+                onSelect: { selectedPromotionItem = $0 }
             )
             .environmentObject(authViewModel)
             .environmentObject(portfolioViewModel)
@@ -95,8 +109,17 @@ struct ClientZoneScreenView: View {
                 .environmentObject(authViewModel)
                 .environmentObject(portfolioViewModel)
         }
-        .safeAreaInset(edge: .bottom) {
-            CustomTabBar(selectedTab: $selectedTab)
+        .fullScreenCover(isPresented: $authViewModel.isDailyRewardPresented) {
+            DailyLoginRewardAssembly.assemble(
+                currentDay: $authViewModel.dailyRewardDay,
+                amount: authViewModel.dailyRewardAmount,
+                onClaim: {
+                    authViewModel.claimDailyReward { success in
+                        if success { print("✅ Награда успешно начислена") }
+                    }
+                },
+                onClose: { authViewModel.closeDailyRewardPopup() }
+            )
         }
         .onAppear {
             loadSecuritiesIfNeeded()
@@ -123,29 +146,7 @@ struct ClientZoneScreenView: View {
             }
         }
     }
-
-    @ViewBuilder
-    private func content(for tab: SKBAppTabKind) -> some View {
-        
-        switch tab {
-        case .quotes:
-            QuoteScreenAssembly.assemble(
-                allSecurities: allSecurities,
-                favoriteSecIDs: $favoriteSecIDs,
-                selectedPromotionItem: $selectedPromotionItem
-            )
-            .environmentObject(newsViewModel)
-        case .rating:
-            LeaderboardScreenAssembly.assemble()
-        case .portfolio:
-            PortfolioScreenAssembly.assemble()
-        case .settings:
-            SettingsScreenAssembly.assemble()
-        }
-    }
 }
-
-// MARK: - Preview
 
 #Preview {
     ClientZoneScreenView()

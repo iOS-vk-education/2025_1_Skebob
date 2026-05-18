@@ -117,21 +117,21 @@ struct LeaderboardScreenView: View {
                 // Список пользователей
                 ForEach(Array(leaderboard.enumerated()), id: \.element.id) { index, user in
                     LeaderboardRow(user: user, rank: index + 1, isCurrentUser: user.uid == currentUserUID)
-                        .padding(.horizontal, 16)
                     
                     if index < leaderboard.count - 1 {
                         Divider()
                             .background(Color.gray.opacity(0.2))
-                            .padding(.leading, 70)
+                            .padding(.leading, 40) // ✅ Фикс: отступ после колонки с рангом
                     }
                 }
             }
+            .padding(.top, 80)
             .padding(.vertical, 8)
         }
     }
     
     private var headerRow: some View {
-        HStack {
+        HStack(spacing: 10) {
             Text("#")
                 .frame(width: 40, alignment: .leading)
                 .foregroundColor(.gray)
@@ -213,7 +213,6 @@ struct LeaderboardRow: View {
     
     var body: some View {
         HStack(spacing: 10) {
-
             rankBadge
                 .frame(width: 40, alignment: .leading)
             
@@ -222,50 +221,56 @@ struct LeaderboardRow: View {
                     .foregroundColor(isCurrentUser ? Color(red: 1.0, green: 0.5, blue: 0.0) : .gray)
                 
                 Text(user.displayName)
-                    .foregroundColor(.white)
                     .font(.system(size: 14, weight: isCurrentUser ? .semibold : .regular))
-                
-                if isCurrentUser {
-                    Text("• Вы")
-                        .font(.caption2)
-                        .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
-                }
+                    .foregroundColor(.white)
+                + Text(isCurrentUser ? " (Вы)" : "")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .lineLimit(1)
+            
             Text(user.formattedBalance)
                 .foregroundColor(.white)
                 .font(.system(size: 13))
-                .frame(width: 100, alignment: .trailing)
+                .frame(width: 85, alignment: .trailing)
+                .lineLimit(1)
+            
             Text(user.formattedPortfolio)
                 .foregroundColor(user.profitColor)
                 .font(.system(size: 13))
-                .frame(width: 100, alignment: .trailing)
+                .frame(width: 85, alignment: .trailing)
+                .lineLimit(1)
         }
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(
             isCurrentUser
                 ? Color(red: 1.0, green: 0.5, blue: 0.0).opacity(0.1)
                 : Color.clear
         )
-        .padding(.horizontal, 16)
         .cornerRadius(8)
     }
     
     private var rankBadge: some View {
-        ZStack {
+        Group {
             if rank <= 3 {
-                Circle()
-                    .fill(rank == 1 ? Color.yellow : rank == 2 ? Color.gray : Color.orange)
-                    .frame(width: 28, height: 28)
-                
-                Text("\(rank)")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(rank == 1 ? .black : .white)
+                ZStack {
+                    Circle()
+                        .fill(rank == 1 ? Color.yellow : rank == 2 ? Color.gray : Color.orange)
+                        .frame(width: 28, height: 28)
+                    Text("\(rank)")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(rank == 1 ? .black : .white)
+                        .frame(width: 28, height: 28)
+                        .multilineTextAlignment(.center)
+                }
             } else {
                 Text("\(rank)")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(rank <= 10 ? .white : .gray)
+                    .frame(width: 28, height: 28)
+                    .multilineTextAlignment(.center)
             }
         }
     }

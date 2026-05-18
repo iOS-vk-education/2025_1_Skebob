@@ -22,8 +22,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: "161514")
-                    .ignoresSafeArea()
+                Color(hex: "161514").ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 24) {
                         VStack(spacing: 8) {
