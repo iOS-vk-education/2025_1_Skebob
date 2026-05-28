@@ -43,8 +43,8 @@ class RSSParser: NSObject, XMLParserDelegate {
     
     func parser(_ parser: XMLParser, foundCharacters string: String) {
         guard let element = currentElement else { return }
-        if ["title", "link", "description", "pubDate"].contains(element) {
-            current[element, default: ""] += string
+        if ["title", "link", "description", "pubDate", "category"].contains(element) {
+            current[element, default: ""] += string.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
     
@@ -63,7 +63,8 @@ class RSSParser: NSObject, XMLParserDelegate {
                 link: current["link"] ?? "",
                 description: current["description"],
                 pubDate: current["pubDate"] ?? "",
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                category: current["category"]
             )
             items.append(item)
         }

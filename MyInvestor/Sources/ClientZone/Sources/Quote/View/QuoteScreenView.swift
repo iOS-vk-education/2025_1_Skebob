@@ -29,7 +29,7 @@ struct QuoteScreenView: View {
     var body: some View {
         ZStack {
             Color(hex: "161514").ignoresSafeArea()
-            ScrollView {
+            ScrollView (showsIndicators: false) {
                 VStack(spacing: 16) {
                     balanceContainer
                     favoritesContainer
@@ -64,7 +64,7 @@ private extension QuoteScreenView {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.leading, 16)
-        .padding(.top, 16)
+        .padding(.top, 10)
     }
 
     var favoritesContainer: some View {
@@ -92,7 +92,7 @@ private extension QuoteScreenView {
                         }
                     }
                 }
-                .frame(height: 150)
+                .frame(height: 170)
             }
         }
     }
@@ -137,14 +137,15 @@ private extension QuoteScreenView {
             Button {
                 UIApplication.shared.open(item.url)
             } label: {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
+                    
                     if let imageUrl = item.imageUrl {
                         AsyncImage(url: imageUrl) { phase in
                             switch phase {
                             case .empty:
                                 Rectangle()
                                     .fill(Color.white.opacity(0.05))
-                                    .frame(height: 120)
+                                    .frame(height: 140)
                                     .overlay(
                                         ProgressView()
                                             .progressViewStyle(.circular)
@@ -154,12 +155,12 @@ private extension QuoteScreenView {
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
-                                    .frame(height: 120)
+                                    .frame(height: 140)
                                     .clipped()
                             case .failure:
                                 Rectangle()
                                     .fill(Color.white.opacity(0.05))
-                                    .frame(height: 120)
+                                    .frame(height: 140)
                                     .overlay(
                                         Image(systemName: "photo")
                                             .foregroundColor(.gray)
@@ -168,42 +169,71 @@ private extension QuoteScreenView {
                                 EmptyView()
                             }
                         }
-                        .cornerRadius(8)
+                        .cornerRadius(12)
                     }
                     
                     Text(item.title)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     
                     Text(item.summary)
-                        .font(.system(size: 12))
+                        .font(.system(size: 13))
                         .foregroundColor(.white.opacity(0.7))
-                        .lineLimit(2)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
                     
-                    HStack {
+                    HStack(spacing: 8) {
                         Text(item.source)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.blue.opacity(0.2))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.blue.opacity(0.4), lineWidth: 0.5)
+                                    )
+                            )
+                        
+                        Spacer()
+                        
+                        Text(item.formattedDate)
                             .font(.system(size: 11))
-                            .foregroundColor(.blue)
-                        Text(item.date, style: .relative)
-                            .font(.system(size: 11))
-                            .foregroundColor(.gray)
+                            .foregroundColor(Color(hex: "FFBC11").opacity(0.9))
+                            .fontWeight(.medium)
                     }
                 }
-                .padding(12)
+                .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(hex: "FFFFFF").opacity(0.05),
-                                Color(hex: "FFBC11").opacity(0.08)
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(hex: "FFFFFF").opacity(0.05),
+                                    Color(hex: "FFBC11").opacity(0.08)
                                 ]),
                                 startPoint: .bottomLeading,
                                 endPoint: .topTrailing
                             )
                         )
                 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color(hex: "FFBC11").opacity(0.3), Color.clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.5
+                        )
+                )
+                .shadow(color: Color(hex: "FFBC11").opacity(0.1), radius: 8, y: 3)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

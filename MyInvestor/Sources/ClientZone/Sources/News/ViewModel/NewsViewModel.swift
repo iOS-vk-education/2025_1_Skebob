@@ -44,6 +44,9 @@ class NewsViewModel: ObservableObject {
                 let rss = await parser.parse(data: data)
                 
                 let parsed = rss.compactMap { item -> NewsItem? in
+                    if item.category != "Экономика" && item.category != "Бизнес" {
+                        return nil
+                    }
                     guard let url = URL(string: item.link),
                           let date = dateFormatter.date(from: item.pubDate) else {
                         return nil

@@ -23,6 +23,7 @@ struct MyInvestorApp: App {
     var body: some Scene {
         WindowGroup {
             RootScreenAssembly.assemble()
+                .preferredColorScheme(.dark)
                 .environmentObject(authViewModel)
         }
     }

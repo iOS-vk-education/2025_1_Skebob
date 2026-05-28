@@ -46,6 +46,7 @@ struct ClientZoneScreenView: View {
                     .tabItem { Label("Настройки", systemImage: "gearshape.fill") }
                     .tag(SKBAppTabKind.settings)
             }
+            .tint(.orange)
             .background(.clear)
             .environmentObject(authViewModel)
             .environmentObject(portfolioViewModel)
@@ -54,25 +55,35 @@ struct ClientZoneScreenView: View {
         .safeAreaInset(edge: .top) {
             HStack(spacing: 0) {
                 Button { isProfilePresented = true } label: {
-                    Image("ProfileIcon").topBarButtonStyle()
-                }.padding(.leading, 16)
+                    Image(systemName: "person")
+                        .font(.system(size: 22, weight: .semibold))
+                }
+                .frame(width: 52, height: 52)
+                .foregroundColor(.white)
+                .glassEffect(.regular.interactive())
+                .padding(.leading, 16)
                 
                 Spacer()
                 
                 Button { authViewModel.presentDailyRewardPopup() } label: {
                     Image(systemName: "calendar.badge.clock")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 52, height: 52)
                         .background(Color.white.opacity(0.14))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 
                 Spacer()
                 
                 Button { isSearchPresented = true } label: {
-                    Image("SearchIcon").topBarButtonStyle()
-                }.padding(.trailing, 16)
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 22, weight: .semibold))
+                }
+                .frame(width: 52, height: 52)
+                .foregroundColor(.white)
+                .glassEffect(.regular.interactive())
+                .padding(.trailing, 16)
             }
             .overlay(
                 Circle()
@@ -115,7 +126,7 @@ struct ClientZoneScreenView: View {
                 amount: authViewModel.dailyRewardAmount,
                 onClaim: {
                     authViewModel.claimDailyReward { success in
-                        if success { print("✅ Награда успешно начислена") }
+                        if success { print("Награда успешно начислена") }
                     }
                 },
                 onClose: { authViewModel.closeDailyRewardPopup() }
